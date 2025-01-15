@@ -1,17 +1,26 @@
 const std = @import("std");
 
-pub fn main() !void {
-	// Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-	std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+const cube = @import("cube.zig");
 
-	// stdout is for the actual output of your application, for example if you
-	// are implementing gzip, then only the compressed bytes should be sent to
-	// stdout, not any debugging messages.
+const Rubik = cube.Cube(3);
+
+pub fn main() !void {
 	const stdout_file = std.io.getStdOut().writer();
 	var bw = std.io.bufferedWriter(stdout_file);
 	const stdout = bw.writer();
 
-	try stdout.print("Run `zig build test` to run the tests.\n", .{});
+	var c = Rubik.init();
 
-	try bw.flush(); // don't forget to flush!
+	try stdout.print("{any}\n", .{c});
+	c.exec_right(false);
+	c.exec_up(true);
+	c.exec_up(true);
+	c.exec_right(true);
+	c.exec_up(true);
+	c.exec_right(false);
+	c.exec_up(true);
+	c.exec_right(true);
+	try stdout.print("{any}\n", .{c});
+
+	try bw.flush();
 }
