@@ -153,7 +153,7 @@ pub fn Cube(comptime n: u8) type {
 		}
 
 		pub fn deinit(self: *Self) void {
-			std.debug.print("{any}", .{self.cube_faces});
+			_ = self;
 		}
 
 
@@ -329,7 +329,7 @@ pub fn Cube(comptime n: u8) type {
 
 		fn rotate_side(self: *Self, side: FaceSide, revert: bool) void {
 			const old_cube_faces = self.cube_faces;
-			for (0..n) |h| {
+			inline for (0..n) |h| {
 				for (0..n) |w| {
 					const nw = n - 1 - h;
 					const nh = w;
@@ -407,27 +407,27 @@ test "basic 2x2 Rubik's cube test" {
 	const Rubik = Cube(2);
 	var cube = Rubik.init();
 	try expect(cube.solved());
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_up(true);
-	cube.exec_right(true);
-	cube.exec_up(true);
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_right(true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
 	try expect(!cube.solved());
 	const packed_cube = cube.pack();
 	const copied_cube = Rubik.unpack(packed_cube);
 	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
 	for (0..5) |_| {
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_up(true);
-		cube.exec_right(true);
-		cube.exec_up(true);
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_right(true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
 	}
 	try expect(cube.solved());
 }
@@ -436,27 +436,27 @@ test "basic 3x3 Rubik's cube test" {
 	const Rubik = Cube(3);
 	var cube = Rubik.init();
 	try expect(cube.solved());
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_up(true);
-	cube.exec_right(true);
-	cube.exec_up(true);
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_right(true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
 	try expect(!cube.solved());
 	const packed_cube = cube.pack();
 	const copied_cube = Rubik.unpack(packed_cube);
 	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
 	for (0..5) |_| {
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_up(true);
-		cube.exec_right(true);
-		cube.exec_up(true);
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_right(true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
 	}
 	try expect(cube.solved());
 }
@@ -465,27 +465,27 @@ test "basic 4x4 Rubik's cube test" {
 	const Rubik = Cube(4);
 	var cube = Rubik.init();
 	try expect(cube.solved());
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_up(true);
-	cube.exec_right(true);
-	cube.exec_up(true);
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_right(true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
 	try expect(!cube.solved());
 	const packed_cube = cube.pack();
 	const copied_cube = Rubik.unpack(packed_cube);
 	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
 	for (0..5) |_| {
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_up(true);
-		cube.exec_right(true);
-		cube.exec_up(true);
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_right(true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
 	}
 	try expect(cube.solved());
 }
@@ -494,27 +494,27 @@ test "basic 7x7 Rubik's cube test" {
 	const Rubik = Cube(7);
 	var cube = Rubik.init();
 	try expect(cube.solved());
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_up(true);
-	cube.exec_right(true);
-	cube.exec_up(true);
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_right(true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
 	try expect(!cube.solved());
 	const packed_cube = cube.pack();
 	const copied_cube = Rubik.unpack(packed_cube);
 	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
 	for (0..5) |_| {
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_up(true);
-		cube.exec_right(true);
-		cube.exec_up(true);
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_right(true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
 	}
 	try expect(cube.solved());
 }
@@ -523,27 +523,27 @@ test "hard Rubik's cube test" {
 	const Rubik = Cube(250);
 	var cube = Rubik.init();
 	try expect(cube.solved());
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_up(true);
-	cube.exec_right(true);
-	cube.exec_up(true);
-	cube.exec_right(false);
-	cube.exec_up(true);
-	cube.exec_right(true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
+	cube.exec_up(0, true);
+	cube.exec_right(0, false);
+	cube.exec_up(0, true);
+	cube.exec_right(0, true);
 	try expect(!cube.solved());
 	const packed_cube = cube.pack();
 	const copied_cube = Rubik.unpack(packed_cube);
 	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
 	for (0..5) |_| {
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_up(true);
-		cube.exec_right(true);
-		cube.exec_up(true);
-		cube.exec_right(false);
-		cube.exec_up(true);
-		cube.exec_right(true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
+		cube.exec_up(0, true);
+		cube.exec_right(0, false);
+		cube.exec_up(0, true);
+		cube.exec_right(0, true);
 	}
 	try expect(cube.solved());
 }

@@ -3,7 +3,7 @@ const std = @import("std");
 const cube = @import("cube.zig");
 const heuristic = @import("heuristic.zig");
 
-const Rubik = cube.Cube(3);
+const Rubik = cube.Cube(4);
 
 const Heuristic = heuristic.HeuristicDB(Rubik);
 
@@ -19,11 +19,9 @@ pub fn main() !void {
 
 	// try stdout.print("{any}\n", .{c});
 	// const t = std.time.microTimestamp();
-	// const op = 200000;
+	// const op = 20000000;
 	// for (0..op/8) |_| {
 	// 	c.exec_right(0, false);
-	// 	c.exec_movement(Rubik.Movement.init(.RIGHT, true, 0));
-	// 	c.exec_movement(Rubik.Movement.init(.RIGHT, false, 0));
 	// 	c.exec_up(0, true);
 	// 	c.exec_up(0, true);
 	// 	c.exec_right(0, true);
@@ -34,16 +32,12 @@ pub fn main() !void {
 	// }
 	// try stdout.print("{d} op/s\n", .{op / (@as(f64, @floatFromInt(std.time.microTimestamp() - t)) / 1000000.0)});
 	// try stdout.print("{any}\n", .{c});
-	// var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-	// defer arena.deinit();
-	// const allocator = arena.allocator();
+	var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+	defer arena.deinit();
+	const allocator = arena.allocator();
 
-	// var db = Heuristic.init(allocator);
-	// defer db.deinit();
-
-	// const ttt = try Rubik.Movement.from_string("R2'");
-
-	// std.debug.print("{s}\n", .{try ttt.to_string()});
+	var db = Heuristic.init(allocator);
+	defer db.deinit();
 
 	var c = Rubik.init();
 
