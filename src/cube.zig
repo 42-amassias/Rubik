@@ -7,6 +7,7 @@ pub fn Cube(comptime n: u8) type {
 		pub const face_count: u32 = 6 * @as(u32, n) * @as(u32, n);
 
 		pub const PackedCube = [(@bitSizeOf(@typeInfo(Color).Enum.tag_type) * face_count + 7) / 8]u8;
+		pub const CubeFaces = [6][n][n]Color;
 
 		pub const Color = enum(u3) {
 			WHITE,	// UP
@@ -37,7 +38,103 @@ pub fn Cube(comptime n: u8) type {
 			DOWN,
 		};
 
-		const solved_state = [6][n][n]Color{
+		pub const Movement = struct {
+			pub const MovementSide = enum {
+				UP,
+				LEFT,
+				FRONT,
+				RIGHT,
+				BACK,
+				DOWN,
+				MHOR, // MIDDLE HORIZONTAL
+				MVER, // MIDDLE VERTICAL
+				MTRA, // MIDDLE TRANSVERSAL
+			};
+
+			pub const FormatError = error {
+				BadFormat,
+			};
+
+			revert: bool,
+			side: MovementSide,
+			shift: u7,
+
+			const MAX_MOVEMENT_STRING_SIZE = 5;
+
+			pub fn init(_side: MovementSide, _revert: bool, _shift: u7) Movement {
+				return .{
+					.revert = _revert,
+					.side = _side,
+					.shift = _shift,
+				};
+			}
+
+			pub fn from_string(str: []const u8) FormatError!Movement {
+				if (str.len < 1) return FormatError.BadFormat;
+				const char = str[0];
+				const revert = str[str.len - 1] == '\'';
+				const shift = if (str.len - @intFromBool(revert) <= 1) 0 else std.fmt.parseInt(u7, str[1..str.len - @intFromBool(revert)], 10) catch return FormatError.BadFormat;
+				return Movement.init(switch (char) {
+					'U' => .UP,
+					'L' => .LEFT,
+					'F' => .FRONT,
+					'R' => .RIGHT,
+					'B' => .BACK,
+					'D' => .DOWN,
+					'E' => .MHOR,
+					'M' => .MVER,
+					'S' => .MTRA,
+					else => return FormatError.BadFormat,
+				}, revert, shift);
+			}
+
+			pub fn read(reader: anytype) !Movement {
+				const char: u8 = try reader.readByte();
+				const shift = try reader.readInt();
+				std.debug.print("c : {s} shift : {d}", .{char, shift});
+				return Movement.init(.BACK, false, 0);
+			}
+
+			fn to_char(self: Movement) u8 {
+				return switch (self.side) {
+					.UP => 'U',
+					.LEFT => 'L',
+					.FRONT => 'F',
+					.RIGHT => 'R',
+					.BACK => 'B',
+					.DOWN => 'D',
+					.MHOR => 'E',
+					.MVER => 'M',
+					.MTRA => 'S',
+				};
+			}
+
+			// THIS RETURN A POINTER TO THE STACKFRAME AND THIS IS BROKEN OBVIOUSLY
+			pub fn to_string(self: Movement) ![]u8 {
+				var buffer: [MAX_MOVEMENT_STRING_SIZE]u8 = undefined;
+				return if (self.shift == 0) try std.fmt.bufPrint(std.mem.asBytes(&buffer), "{c}{s}", .{
+					self.to_char(),
+					if (self.revert) "'" else "",
+				})
+				else try std.fmt.bufPrint(std.mem.asBytes(&buffer), "{c}{d}{s}", .{
+					self.to_char(),
+					self.shift,
+					if (self.revert) "'" else "",
+				});
+			}
+
+			pub fn write(self: Movement, writer: anytype) !void {
+				try writer.writeByte(self.to_char());
+				if (self.shift != 0) try writer.print("{d}", .{self.shift});
+				if (self.revert) try writer.writeAll("'");
+			}
+
+			pub fn format(self: Movement, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
+				try self.write(writer);
+			}
+		};
+
+		const solved_state = CubeFaces{
 			.{.{Color.WHITE} ** n} ** n,
 			.{.{Color.GREEN} ** n} ** n,
 			.{.{Color.RED} ** n} ** n,
@@ -47,7 +144,7 @@ pub fn Cube(comptime n: u8) type {
 		};
 		const orientation_ref: [3][3]i2 = .{.{0, 1, 0}, .{1, 0, 0},.{0, 0, 1}};
 
-		cube_faces: [6][n][n]Color = solved_state,
+		cube_faces: CubeFaces = solved_state,
 		orientation: [3][3]i2 = orientation_ref,
 
 		pub fn init() Self {
@@ -81,11 +178,15 @@ pub fn Cube(comptime n: u8) type {
 		}
 
 		pub fn pack(self: Self) PackedCube {
+			return pack_cube_faces(self.cube_faces);
+		}
+
+		pub fn pack_cube_faces(cf: CubeFaces) PackedCube {
 			var packed_cube: PackedCube = undefined;
 			const FaceType = @typeInfo(Color).Enum.tag_type;
 			var bit_offset: usize = 0;
 			// linear raw array of the cube faces
-			const linear_face = @as(*const [face_count]FaceType, @ptrCast(self.cas_linear_face()));
+			const linear_face = @as(*const [face_count]FaceType, @ptrCast(&cf));
 			for (linear_face.*) |face|
 			{
 				std.mem.writePackedIntNative(FaceType, &packed_cube, bit_offset, face);
@@ -238,52 +339,51 @@ pub fn Cube(comptime n: u8) type {
 			}
 		}
 
-		pub fn exec_up(self: *Self, revert: bool) void {
-			const abs_side = self.rel_to_abs_side(FaceSide.UP);
-			// Rotate the face
-			self.rotate_side(abs_side, revert);
-			// Line movement
-			self.exec_line_movement(movements[@intFromEnum(abs_side)], 0, revert);
+		pub fn exec_movement(self: *Self, move: Movement) void {
+			if ((move.side == .MHOR or move.side == .MVER or move.side == .MTRA) and n % 2 == 0) unreachable;
+			self.exec_rel(switch (move.side) {
+				.UP		=> FaceSide.UP,
+				.LEFT	=> FaceSide.LEFT,
+				.FRONT	=> FaceSide.FRONT,
+				.RIGHT	=> FaceSide.RIGHT,
+				.BACK	=> FaceSide.BACK,
+				.DOWN	=> FaceSide.DOWN,
+				.MHOR	=> unreachable,
+				.MVER	=> unreachable,
+				.MTRA	=> unreachable,
+			}, move.shift, move.revert);
 		}
 
-		pub fn exec_left(self: *Self, revert: bool) void {
-			const abs_side = self.rel_to_abs_side(FaceSide.LEFT);
-			// Rotate the face
-			self.rotate_side(abs_side, revert);
+		fn exec_rel(self: *Self, side: FaceSide, shift: u7, revert: bool) void {
+			const abs_side = self.rel_to_abs_side(side);
+			// Rotate the face if needed
+			if (shift == 0) self.rotate_side(abs_side, revert);
 			// Line movement
-			self.exec_line_movement(movements[@intFromEnum(abs_side)], 0, revert);
+			self.exec_line_movement(movements[@intFromEnum(abs_side)], shift, revert);
 		}
 
-		pub fn exec_front(self: *Self, revert: bool) void {
-			const abs_side = self.rel_to_abs_side(FaceSide.FRONT);
-			// Rotate the face
-			self.rotate_side(abs_side, revert);
-			// Line movement
-			self.exec_line_movement(movements[@intFromEnum(abs_side)], 0, revert);
+		pub fn exec_up(self: *Self, shift: u7, revert: bool) void {
+			self.exec_rel(FaceSide.UP, shift, revert);
 		}
 
-		pub fn exec_right(self: *Self, revert: bool) void {
-			const abs_side = self.rel_to_abs_side(FaceSide.RIGHT);
-			// Rotate the face
-			self.rotate_side(abs_side, revert);
-			// Line movement
-			self.exec_line_movement(movements[@intFromEnum(abs_side)], 0, revert);
+		pub fn exec_left(self: *Self, shift: u7, revert: bool) void {
+			self.exec_rel(FaceSide.LEFT, shift, revert);
 		}
 
-		pub fn exec_back(self: *Self, revert: bool) void {
-			const abs_side = self.rel_to_abs_side(FaceSide.BACK);
-			// Rotate the face
-			self.rotate_side(abs_side, revert);
-			// Line movement
-			self.exec_line_movement(movements[@intFromEnum(abs_side)], 0, revert);
+		pub fn exec_front(self: *Self, shift: u7, revert: bool) void {
+			self.exec_rel(FaceSide.FRONT, shift, revert);
 		}
 
-		pub fn exec_down(self: *Self, revert: bool) void {
-			const abs_side = self.rel_to_abs_side(FaceSide.DOWN);
-			// Rotate the face
-			self.rotate_side(abs_side, revert);
-			// Line movement
-			self.exec_line_movement(movements[@intFromEnum(abs_side)], 0, revert);
+		pub fn exec_right(self: *Self, shift: u7, revert: bool) void {
+			self.exec_rel(FaceSide.RIGHT, shift, revert);
+		}
+
+		pub fn exec_back(self: *Self, shift: u7, revert: bool) void {
+			self.exec_rel(FaceSide.BACK, shift, revert);
+		}
+
+		pub fn exec_down(self: *Self, shift: u7, revert: bool) void {
+			self.exec_rel(FaceSide.DOWN, shift, revert);
 		}
 
 		pub fn format(self: Self, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
