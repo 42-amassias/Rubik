@@ -22,7 +22,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.rubik.Main</mainClass>
+              <mainClass>com.rubik.App</mainClass>
             </manifest>
           </archive>
         </configuration>
