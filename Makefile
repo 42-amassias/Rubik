@@ -1,9 +1,10 @@
 TARGET		:=	target/rubik-1.0-SNAPSHOT.jar
 JAVA_SRC	:=	$(shell find src/main/java -type f -name \*.java)
+POM			:=	pom.xml
 
 all: $(TARGET)
 
-$(TARGET): $(JAVA_SRC)
+$(TARGET): $(POM) $(JAVA_SRC)
 	@mvn package
 
 run: $(TARGET)
