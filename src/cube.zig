@@ -4,7 +4,7 @@ pub fn Cube(comptime n: u8) type {
 	return struct {
 		const Self = @This();
 
-		pub const face_count = 6 * n * n;
+		pub const face_count: u32 = 6 * @as(u32, n) * @as(u32, n);
 
 		pub const PackedCube = [(@bitSizeOf(@typeInfo(Color).Enum.tag_type) * face_count + 7) / 8]u8;
 
@@ -71,7 +71,7 @@ pub fn Cube(comptime n: u8) type {
 		pub fn unpack(packed_cube: PackedCube) Self {
 			var self = Self.init();
 			const FaceType = @typeInfo(Color).Enum.tag_type;
-			var bit_offset: u16 = 0;
+			var bit_offset: usize = 0;
 			// linear raw array of the cube faces
 			for (@as(*[face_count]FaceType, @ptrCast(self.as_linear_face()))) |*face| {
 				face.* = std.mem.readPackedIntNative(FaceType, &packed_cube, bit_offset);
@@ -83,7 +83,7 @@ pub fn Cube(comptime n: u8) type {
 		pub fn pack(self: Self) PackedCube {
 			var packed_cube: PackedCube = undefined;
 			const FaceType = @typeInfo(Color).Enum.tag_type;
-			var bit_offset: u16 = 0;
+			var bit_offset: usize = 0;
 			// linear raw array of the cube faces
 			const linear_face = @as(*const [face_count]FaceType, @ptrCast(self.cas_linear_face()));
 			for (linear_face.*) |face|
@@ -299,4 +299,151 @@ pub fn Cube(comptime n: u8) type {
 			try writer.print("Solved state : {}\n", .{self.solved()});
 		}
 	};
+}
+
+const expect = std.testing.expect;
+
+test "basic 2x2 Rubik's cube test" {
+	const Rubik = Cube(2);
+	var cube = Rubik.init();
+	try expect(cube.solved());
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	cube.exec_up(true);
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	try expect(!cube.solved());
+	const packed_cube = cube.pack();
+	const copied_cube = Rubik.unpack(packed_cube);
+	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
+	for (0..5) |_| {
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_up(true);
+		cube.exec_right(true);
+		cube.exec_up(true);
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_right(true);
+	}
+	try expect(cube.solved());
+}
+
+test "basic 3x3 Rubik's cube test" {
+	const Rubik = Cube(3);
+	var cube = Rubik.init();
+	try expect(cube.solved());
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	cube.exec_up(true);
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	try expect(!cube.solved());
+	const packed_cube = cube.pack();
+	const copied_cube = Rubik.unpack(packed_cube);
+	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
+	for (0..5) |_| {
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_up(true);
+		cube.exec_right(true);
+		cube.exec_up(true);
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_right(true);
+	}
+	try expect(cube.solved());
+}
+
+test "basic 4x4 Rubik's cube test" {
+	const Rubik = Cube(4);
+	var cube = Rubik.init();
+	try expect(cube.solved());
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	cube.exec_up(true);
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	try expect(!cube.solved());
+	const packed_cube = cube.pack();
+	const copied_cube = Rubik.unpack(packed_cube);
+	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
+	for (0..5) |_| {
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_up(true);
+		cube.exec_right(true);
+		cube.exec_up(true);
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_right(true);
+	}
+	try expect(cube.solved());
+}
+
+test "basic 7x7 Rubik's cube test" {
+	const Rubik = Cube(7);
+	var cube = Rubik.init();
+	try expect(cube.solved());
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	cube.exec_up(true);
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	try expect(!cube.solved());
+	const packed_cube = cube.pack();
+	const copied_cube = Rubik.unpack(packed_cube);
+	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
+	for (0..5) |_| {
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_up(true);
+		cube.exec_right(true);
+		cube.exec_up(true);
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_right(true);
+	}
+	try expect(cube.solved());
+}
+
+test "hard Rubik's cube test" {
+	const Rubik = Cube(250);
+	var cube = Rubik.init();
+	try expect(cube.solved());
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	cube.exec_up(true);
+	cube.exec_right(false);
+	cube.exec_up(true);
+	cube.exec_right(true);
+	try expect(!cube.solved());
+	const packed_cube = cube.pack();
+	const copied_cube = Rubik.unpack(packed_cube);
+	try expect(std.mem.eql(Rubik.Color, cube.cas_linear_face(), copied_cube.cas_linear_face()));
+	for (0..5) |_| {
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_up(true);
+		cube.exec_right(true);
+		cube.exec_up(true);
+		cube.exec_right(false);
+		cube.exec_up(true);
+		cube.exec_right(true);
+	}
+	try expect(cube.solved());
 }
