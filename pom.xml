@@ -14,20 +14,35 @@
     </properties>
 
     <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>com.rubik.App</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+      <sourceDirectory> src </sourceDirectory>
+
+      <resources>
+        <resource>
+          <directory> resources </directory>
+          <includes>
+            <include> icons/icon16.jpg </include>
+            <include> icons/icon32.jpg </include>
+            <include> icons/icon64.jpg </include>
+            <include> icons/icon128.jpg </include>
+            <include> icons/icon256.jpg </include>
+          </includes>
+        </resource>
+      </resources>
+
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.4.2</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <mainClass>com.rubik.App</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
+      </plugins>
+    </build>
 
 </project>
