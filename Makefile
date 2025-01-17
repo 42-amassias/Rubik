@@ -12,3 +12,6 @@ $(EXE): $(TARGET)
 
 $(TARGET): $(POM) $(JAVA_SRC)
 	@mvn package
+
+fclean:
+	@rm -rf target $(EXE)
