@@ -18,10 +18,6 @@
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
-		<lwjgl.version>3.3.1</lwjgl.version>
-		<joml.version>1.10.7</joml.version>
-		<lwjgl3-awt.version>0.1.8</lwjgl3-awt.version>
-		<lwjgl.natives>natives-linux</lwjgl.natives>
 		<jogl.version>2.3.2</jogl.version>
 		<jogl.groupId>org.jogamp.jogl</jogl.groupId>
 	</properties>
