@@ -53,7 +53,6 @@
 					<include> icons/icon64.jpg </include>
 					<include> icons/icon128.jpg </include>
 					<include> icons/icon256.jpg </include>
-					<include> lib/linux-amd64/libgluegen_rt.so </include>
 				</includes>
 			</resource>
 		</resources>
