@@ -1,6 +1,8 @@
 package com.rubik.gui;
 
 import java.awt.Image;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,11 @@ import javax.swing.JFrame;
 public class Window
 {
 	private static final String TITLE = "Rubik";
+
+	private static final int ICON_MIN_SIZE = 16;
+	private static final int ICON_MAX_SIZE = 256;
+	private static final String ICON_PATH = "/icons";
+	private static final String ICON_EXT = ".jpg";
 
 	private JFrame frame;
 	private IFrameLayout layout;
@@ -54,6 +61,13 @@ public class Window
 
 	private void createController()
 	{
+		// Prevents JOGL from a nasty crash
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e)
+			{
+				frame.dispose();
+			}
+		});
 	}
 
 	private void loadIcons()
@@ -64,11 +78,11 @@ public class Window
 		ImageIcon icon;
 		byte iconData[];
 
-		for (int i = 16; i <= 256; i *= 2)
+		for (int i = ICON_MIN_SIZE; i <= ICON_MAX_SIZE; i *= 2)
 		{
 			try
 			{
-				iconPath = "/icons/icon" + i + ".jpg";
+				iconPath = ICON_PATH + "/icon" + i + ICON_EXT;
 				stream = Window.class.getResourceAsStream(iconPath);
 				iconData = stream.readAllBytes();
 				icon = new ImageIcon(iconData);
