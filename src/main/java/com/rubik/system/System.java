@@ -21,9 +21,7 @@ import com.rubik.system.exception.UnsupportedPlatformException;
 
 public class System
 {
-	public static final String OS_NAME = java.lang.System.getProperty("os.name").toLowerCase();
-	public static final String OS_ARCH = java.lang.System.getProperty("os.arch");
-	public static final String PLATFORM = OS_NAME + "-" + OS_ARCH;
+	public static final String PLATFORM = getPlatform();
 
 	private static final String NATIVES_DIR = "natives";
 	private static final String LIBRARIES_PATH = NATIVES_DIR + "/" + PLATFORM;
@@ -37,6 +35,8 @@ public class System
 	public static void loadDynalicLibraries()
 		throws UnsupportedPlatformException, URISyntaxException, IOException
 	{
+		java.lang.System.out.println("RUNNING ON PLATFORM " + PLATFORM);
+
 		final URI dynamicLibrariesURI = getDynamicLibrariesURI();
 
 		// Check is the app is run via a jar or has been extracted
@@ -53,6 +53,20 @@ public class System
 		// Throw error if one occured while copying
 		if (System.hasHadError)
 			throw System.ioExeption;
+	}
+
+	private static String getPlatform()
+	{
+		final String arch = java.lang.System.getProperty("os.arch");
+		String os = java.lang.System.getProperty("os.name", "generic").toLowerCase();
+
+		if (os.startsWith("win"))
+			os = "windows";
+		else if (os.contains("nix") || os.contains("nux") || os.contains("aix"))
+			os = "linux";
+		else if (os.contains("mac"))
+			os = "macosx";
+		return (os + "-" + arch);
 	}
 
 	private static URI getDynamicLibrariesURI()
